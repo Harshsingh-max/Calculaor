@@ -1,9 +1,293 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full">
 <head>
-    <title>Calculator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the calculator */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Disable tap highlight on mobile */
+        }
+        /* Style for the calculator buttons on active/press */
+        .calc-button:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+        /* Custom font for the display to look more like a calculator */
+        #display {
+            font-family: 'Orbitron', 'Inter', sans-serif; /* A futuristic/digital-looking font as a primary */
+        }
+        /* Import Orbitron font */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+    </style>
 </head>
-<body>
-    <h1>Welcome to the Calculator!</h1>
+<body class="h-full bg-gray-900 flex items-center justify-center antialiased">
+
+    <!-- Calculator Body -->
+    <div class="w-full max-w-xs sm:max-w-sm bg-black rounded-3xl shadow-2xl overflow-hidden p-6 space-y-6">
+        
+        <!-- Calculator Display -->
+        <div class="w-full h-24 flex items-end justify-end p-4">
+            <h1 id="display" class="text-white text-6xl font-light tracking-wide truncate" style="line-height: 1.1;">0</h1>
+        </div>
+
+        <!-- Calculator Buttons Grid -->
+        <div class="grid grid-cols-4 gap-4">
+            
+            <!-- Row 1: AC, +/-, %, ÷ -->
+            <button data-key="clear" class="calc-button h-16 sm:h-20 bg-gray-300 text-black text-2xl sm:text-3xl rounded-full transition-all duration-150 ease-in-out">AC</button>
+            <button data-key="negate" class="calc-button h-16 sm:h-20 bg-gray-300 text-black text-2xl sm:text-3xl rounded-full transition-all duration-150 ease-in-out">+/-</button>
+            <button data-key="percent" class="calc-button h-16 sm:h-20 bg-gray-300 text-black text-2xl sm:text-3xl rounded-full transition-all duration-150 ease-in-out">%</button>
+            <button data-key="/" class="calc-button operator h-16 sm:h-20 bg-yellow-500 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">÷</button>
+
+            <!-- Row 2: 7, 8, 9, × -->
+            <button data-key="7" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">7</button>
+            <button data-key="8" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">8</button>
+            <button data-key="9" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">9</button>
+            <button data-key="*" class="calc-button operator h-16 sm:h-20 bg-yellow-500 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">×</button>
+
+            <!-- Row 3: 4, 5, 6, - -->
+            <button data-key="4" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">4</button>
+            <button data-key="5" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">5</button>
+            <button data-key="6" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">6</button>
+            <button data-key="-" class="calc-button operator h-16 sm:h-20 bg-yellow-500 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">−</button>
+
+            <!-- Row 4: 1, 2, 3, + -->
+            <button data-key="1" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">1</button>
+            <button data-key="2" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">2</button>
+            <button data-key="3" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">3</button>
+            <button data-key="+" class="calc-button operator h-16 sm:h-20 bg-yellow-500 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">+</button>
+
+            <!-- Row 5: 0, ., = -->
+            <button data-key="0" class="calc-button number h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full col-span-2 text-left pl-7 transition-all duration-150 ease-in-out">0</button>
+            <button data-key="." class="calc-button h-16 sm:h-20 bg-gray-700 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">.</button>
+            <button data-key="=" class="calc-button h-16 sm:h-20 bg-yellow-500 text-white text-3xl sm:text-4xl rounded-full transition-all duration-150 ease-in-out">=</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const display = document.getElementById('display');
+            const buttons = document.querySelectorAll('.calc-button');
+            const clearButton = document.querySelector('[data-key="clear"]');
+
+            let calculator = {
+                displayValue: '0',
+                firstOperand: null,
+                waitingForSecondOperand: false,
+                operator: null,
+            };
+
+            function updateDisplay() {
+                // Format the display value
+                let value = calculator.displayValue;
+                
+                // Use exponential notation if number is too large or small
+                if (value.length > 9 && (parseFloat(value) > 999999999 || parseFloat(value) < -99999999)) {
+                    value = parseFloat(value).toExponential(4);
+                } else if (value.length > 9) {
+                    // Limit decimals if too long but not exponential
+                    if (value.includes('.')) {
+                        const parts = value.split('.');
+                        const integerPart = parts[0];
+                        const decimalPart = parts[1];
+                        if (integerPart.length > 9) {
+                            value = parseFloat(value).toExponential(4);
+                        } else {
+                            const allowedDecimals = 9 - integerPart.length;
+                            value = parseFloat(value).toFixed(allowedDecimals);
+                        }
+                    } else {
+                        // This case is handled by the first 'if'
+                    }
+                }
+                
+                display.textContent = value;
+                
+                // Adjust font size for long numbers
+                if (value.length > 9) {
+                    display.classList.add('text-4xl');
+                    display.classList.remove('text-6xl');
+                } else if (value.length > 6) {
+                    display.classList.add('text-5xl');
+                    display.classList.remove('text-6xl', 'text-4xl');
+                } else {
+                    display.classList.add('text-6xl');
+                    display.classList.remove('text-5xl', 'text-4xl');
+                }
+
+                // Update AC/C button
+                if (calculator.displayValue !== '0' || calculator.firstOperand !== null) {
+                    clearButton.textContent = 'C';
+                } else {
+                    clearButton.textContent = 'AC';
+                }
+            }
+
+            updateDisplay();
+
+            function performCalculation(first, second, op) {
+                const firstNum = parseFloat(first);
+                const secondNum = parseFloat(second);
+
+                if (op === '+') return firstNum + secondNum;
+                if (op === '-') return firstNum - secondNum;
+                if (op === '*') return firstNum * secondNum;
+                if (op === '/') {
+                    if (secondNum === 0) return 'Error';
+                    return firstNum / secondNum;
+                }
+                return secondNum;
+            }
+
+            function handleKey(key) {
+                const { displayValue, firstOperand, waitingForSecondOperand, operator } = calculator;
+
+                // Number keys
+                if (!isNaN(key)) {
+                    if (waitingForSecondOperand) {
+                        calculator.displayValue = key;
+                        calculator.waitingForSecondOperand = false;
+                    } else {
+                        calculator.displayValue = displayValue === '0' ? key : displayValue + key;
+                    }
+                }
+                // Decimal key
+                else if (key === '.') {
+                    if (waitingForSecondOperand) {
+                        calculator.displayValue = '0.';
+                        calculator.waitingForSecondOperand = false;
+                        return;
+                    }
+                    if (!displayValue.includes('.')) {
+                        calculator.displayValue += '.';
+                    }
+                }
+                // Operator keys
+                else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                    if (operator && waitingForSecondOperand) {
+                        calculator.operator = key;
+                        return;
+                    }
+
+                    if (firstOperand === null) {
+                        calculator.firstOperand = displayValue;
+                    } else if (operator) {
+                        const result = performCalculation(firstOperand, displayValue, operator);
+                        if(result === 'Error') {
+                            calculator.displayValue = 'Error';
+                            calculator.firstOperand = null;
+                            calculator.operator = null;
+                            calculator.waitingForSecondOperand = true;
+                            updateDisplay();
+                            return;
+                        }
+                        calculator.displayValue = String(result);
+                        calculator.firstOperand = String(result);
+                    }
+
+                    calculator.waitingForSecondOperand = true;
+                    calculator.operator = key;
+                }
+                // Equals key
+                else if (key === '=') {
+                    if (operator && firstOperand !== null) {
+                        const result = performCalculation(firstOperand, displayValue, operator);
+                        if(result === 'Error') {
+                            calculator.displayValue = 'Error';
+                        } else {
+                            calculator.displayValue = String(result);
+                        }
+                        calculator.firstOperand = null; // Reset for new calculation
+                        calculator.operator = null;
+                        calculator.waitingForSecondOperand = true; // Wait for new number
+                    }
+                }
+                // Clear key
+                else if (key === 'clear') {
+                    if (clearButton.textContent === 'C') {
+                        // Clear current entry
+                        calculator.displayValue = '0';
+                        calculator.waitingForSecondOperand = false; // Allow re-entry if operator was pending
+                    } else {
+                        // All Clear
+                        calculator.displayValue = '0';
+                        calculator.firstOperand = null;
+                        calculator.waitingForSecondOperand = false;
+                        calculator.operator = null;
+                    }
+                }
+                // Negate key
+                else if (key === 'negate') {
+                    if(displayValue === 'Error') return;
+                    calculator.displayValue = String(parseFloat(displayValue) * -1);
+                }
+                // Percent key
+                else if (key === 'percent') {
+                    if(displayValue === 'Error') return;
+                    calculator.displayValue = String(parseFloat(displayValue) / 100);
+                }
+
+                if(calculator.displayValue !== 'Error') {
+                    updateDisplay();
+                }
+            }
+
+            buttons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const key = e.target.dataset.key;
+                    if (!key) return; // Exit if no data-key
+                    
+                    // Visual feedback for operators
+                    if (e.target.classList.contains('operator') || key === '=') {
+                        // Remove 'active' state from all operators
+                        document.querySelectorAll('.operator').forEach(op => {
+                            op.classList.remove('bg-white', 'text-yellow-500');
+                            op.classList.add('bg-yellow-500', 'text-white');
+                        });
+                        
+                        // Add 'active' state to the clicked one (unless it's '=')
+                        if(key !== '=') {
+                            e.target.classList.add('bg-white', 'text-yellow-500');
+                            e.target.classList.remove('bg-yellow-500', 'text-white');
+                        }
+                    }
+                    
+                    // If a number is pressed, clear operator active state
+                    if (!isNaN(key) || key === '.') {
+                        document.querySelectorAll('.operator').forEach(op => {
+                            op.classList.remove('bg-white', 'text-yellow-500');
+                            op.classList.add('bg-yellow-500', 'text-white');
+                        });
+                    }
+
+                    handleKey(key);
+                });
+            });
+
+            // Add keyboard support
+            document.addEventListener('keydown', (e) => {
+                let key = e.key;
+                
+                if (key >= 0 && key <= 9) handleKey(key);
+                if (key === '.') handleKey('.');
+                if (key === 'Enter' || key === '=') {
+                    e.preventDefault(); // Prevent default form submission
+                    handleKey('=');
+                }
+                if (key === 'Backspace' || key === 'Delete') handleKey('clear');
+                if (key === 'Escape') handleKey('clear');
+                if (key === '+') handleKey('+');
+                if (key === '-') handleKey('-');
+                if (key === '*') handleKey('*');
+                if (key === '/') handleKey('/');
+                if (key === '%') handleKey('percent');
+            });
+        });
+    </script>
 </body>
 </html>
